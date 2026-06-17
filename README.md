@@ -2,7 +2,7 @@
 
 Leakage-safe clinical machine learning project for in-hospital mortality triage and length-of-stay (LOS) planning on MIMIC-style electronic health record (EHR) admissions data.
 
-This repository packages the reproducible preprocessing and audit layer behind a broader 4-model clinical ML study comparing tabular, sequential, multimodal, and biomedical language-model approaches.
+This repository packages a reproducible, end-to-end portfolio workflow behind a broader clinical ML study. The public notebook runs leakage-safe preprocessing, trains XGBoost and a lightweight Transformer-style tabular model, and compares mortality and LOS metrics.
 
 ## Why This Project Matters
 
@@ -16,7 +16,8 @@ For job applications, the project demonstrates practical clinical ML judgement:
 - treating mortality as an imbalanced clinical safety task, not a generic accuracy problem
 - using LOS as an interpretable regression target for operational planning
 - translating ICD diagnosis codes into clinically meaningful CCS groupings
-- documenting model-development assumptions through reproducible audit files
+- training and evaluating XGBoost and Transformer-style models from local raw admissions data
+- documenting model-development assumptions through reproducible audit files and metrics tables
 - separating public code from patient-level/generated data
 
 ## Repository Layout
@@ -24,6 +25,7 @@ For job applications, the project demonstrates practical clinical ML judgement:
 ```text
 .
 ├── src/preprocess_split_first.py      # Correct split-first preprocessing pipeline
+├── src/modeling.py                    # XGBoost, Transformer, and metric helpers
 ├── notebooks/clinical_ml_pipeline.ipynb # Runnable walkthrough notebook
 ├── tests/                             # Regression tests for leakage safeguards
 ├── data/raw/                          # Local input data, ignored by git
@@ -46,7 +48,7 @@ The modeling objective was not to crown one universal model. It was to test arch
 - Multimodal Transformer is better aligned with LOS prediction when diagnosis history and structured admission context jointly influence recovery time.
 - BioGPT is promising as a recall-oriented second reader, but needs stronger fine-tuning, calibration, and explainability before primary use.
 
-This public repo focuses on the part that must be correct before any model comparison is trustworthy: leakage-safe, patient-level preprocessing.
+This public repo keeps the job-application version focused: it includes leakage-safe patient-level preprocessing plus runnable XGBoost and Transformer-style modeling. LSTM and BioGPT remain part of the broader study context, but are intentionally left out of this repository to keep the code concise and reproducible for reviewers.
 
 ## Quickstart
 
@@ -85,13 +87,20 @@ pytest
 
 ## Notebook
 
-For a code-first walkthrough, open:
+For the complete coding workflow, open:
 
 ```text
 notebooks/clinical_ml_pipeline.ipynb
 ```
 
-The notebook shows how to call the split-first preprocessing pipeline, inspect the audit file, and verify that the held-out splits were transformed by a train-fitted preprocessing object.
+The notebook starts from `data/raw/unified_patient_admissions_ccs.csv` and runs:
+
+- leakage-safe 70/15/15 patient-level splitting
+- train-only imputation and one-hot encoding
+- XGBoost mortality classification and LOS regression
+- lightweight tabular Transformer mortality classification and LOS regression
+- metric comparison saved to `reports/model_comparison_metrics.csv`
+- final no-patient-overlap leakage check
 
 ## Leakage Controls
 
@@ -121,6 +130,6 @@ Patient-level datasets and generated matrices are intentionally ignored by git. 
 
 This project is best presented as a clinical ML reproducibility and model-audit case study. Strong resume bullets:
 
-- Built a leakage-safe clinical ML preprocessing pipeline for mortality and length-of-stay prediction, using patient-level splitting, train-only imputation/encoding, and reproducible audit artifacts.
-- Audited architecture-task fit across XGBoost, LSTM, Multimodal Transformer, and BioGPT-style modeling approaches for rare-event mortality classification and LOS regression.
+- Built an end-to-end clinical ML notebook for mortality and length-of-stay prediction, using patient-level splitting, train-only imputation/encoding, XGBoost, and a Transformer-style tabular neural model.
+- Audited architecture-task fit across XGBoost and Transformer-style modeling approaches for rare-event mortality classification and LOS regression, with broader study context covering LSTM and BioGPT comparators.
 - Applied clinical ML evaluation principles including AUPRC for imbalanced mortality, RMSE/MAE for LOS, grouped validation, subgroup fairness checks, and explainability-focused model selection.
