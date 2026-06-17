@@ -1,18 +1,23 @@
 # Clinical Mortality and Length-of-Stay Modeling
 
-Leakage-safe machine learning pipeline for hospital mortality classification and length-of-stay regression on MIMIC-style admissions data.
+Leakage-safe clinical machine learning project for in-hospital mortality triage and length-of-stay (LOS) planning on MIMIC-style electronic health record (EHR) admissions data.
+
+This repository packages the reproducible preprocessing and audit layer behind a broader 4-model clinical ML study comparing tabular, sequential, multimodal, and biomedical language-model approaches.
 
 ## Why This Project Matters
 
+Hospitals need risk models that support two related decisions: which patients may require urgent clinical escalation, and which admissions may create capacity pressure through longer stays. Mortality prediction is a rare-event problem, where accuracy alone is misleading; LOS prediction is a resource-planning problem, where large errors on long stays are operationally expensive.
+
 The original exploratory workflow imputed missing values before splitting data into train, validation, and test sets. That leaks distributional information from held-out patients into training. This repo fixes that by splitting first at the patient level, then fitting imputers and encoders only on the training split.
 
-The result is a cleaner, recruiter-friendly project that demonstrates:
+For job applications, the project demonstrates practical clinical ML judgement:
 
-- clinical ML data hygiene and leakage prevention
-- subject-level train/validation/test splitting
-- train-only imputation and categorical encoding
-- reproducible artifacts and audit files
-- standardized model comparison outputs for XGBoost, LSTM, Transformer, and BioGPT experiments
+- preventing patient and preprocessing leakage before modeling
+- treating mortality as an imbalanced clinical safety task, not a generic accuracy problem
+- using LOS as an interpretable regression target for operational planning
+- translating ICD diagnosis codes into clinically meaningful CCS groupings
+- documenting model-development assumptions through reproducible audit files
+- separating public code from patient-level/generated data
 
 ## Repository Layout
 
@@ -25,6 +30,23 @@ The result is a cleaner, recruiter-friendly project that demonstrates:
 ├── data/processed/                    # Generated split/model matrices, ignored by git
 └── requirements.txt                   # Minimal Python dependencies
 ```
+
+## Project Context
+
+The original study audited four model families on the same EHR cohort:
+
+- **XGBoost:** structured tabular baseline for interpretable mortality prediction
+- **LSTM:** recurrent sequence baseline over diagnosis-history tokens
+- **Multimodal Transformer:** fusion of CCS diagnosis sequences and tabular admission features
+- **BioGPT:** biomedical language-model comparator using narrative-style admission representations
+
+The modeling objective was not to crown one universal model. It was to test architecture-task fit:
+
+- XGBoost is a strong candidate when sparse tabular comorbidity and diagnosis-burden features drive mortality risk and explainability matters.
+- Multimodal Transformer is better aligned with LOS prediction when diagnosis history and structured admission context jointly influence recovery time.
+- BioGPT is promising as a recall-oriented second reader, but needs stronger fine-tuning, calibration, and explainability before primary use.
+
+This public repo focuses on the part that must be correct before any model comparison is trustworthy: leakage-safe, patient-level preprocessing.
 
 ## Quickstart
 
@@ -77,7 +99,19 @@ The notebook shows how to call the split-first preprocessing pipeline, inspect t
 - Imputers are fit only on the training split.
 - One-hot category levels are learned only from training data; unseen validation/test categories are ignored safely.
 - Mortality features exclude post-outcome/discharge columns such as LOS, discharge time, death time, and target flags.
+- High-cardinality text/code-sequence columns are excluded from the tabular matrix unless deliberately represented.
 - The fitted preprocessing object is saved as `preprocessor_train_only.joblib` for reproducible transforms.
+
+## Evaluation Mindset
+
+The broader study used task-specific evaluation rather than one-size-fits-all metrics:
+
+- **Mortality:** AUPRC, AUROC, F1, recall/sensitivity, specificity, and validation-selected thresholds. AUPRC and recall are emphasized because mortality is rare and missed deaths are clinically costly.
+- **LOS:** RMSE, MAE, and R². RMSE is useful because large long-stay errors matter for bed and staffing capacity.
+- **Robustness:** patient-grouped validation to prevent admission-level leakage.
+- **Fairness:** subgroup recall checks across demographic groups, with caution around unstable estimates when positive cases are sparse.
+
+These choices reflect the deployment reality: a clinically useful model must be robust, interpretable, calibrated, and fair enough for its intended decision point.
 
 ## Notes on Data
 
@@ -85,6 +119,8 @@ Patient-level datasets and generated matrices are intentionally ignored by git. 
 
 ## Portfolio Framing
 
-This project is best presented as a clinical ML reproducibility and leakage-prevention case study. A strong resume bullet:
+This project is best presented as a clinical ML reproducibility and model-audit case study. Strong resume bullets:
 
-> Built a leakage-safe clinical ML pipeline for mortality and length-of-stay prediction, using patient-level splitting, train-only preprocessing, reproducible audits, and standardized model comparison across tree-based, sequence, transformer, and LLM baselines.
+- Built a leakage-safe clinical ML preprocessing pipeline for mortality and length-of-stay prediction, using patient-level splitting, train-only imputation/encoding, and reproducible audit artifacts.
+- Audited architecture-task fit across XGBoost, LSTM, Multimodal Transformer, and BioGPT-style modeling approaches for rare-event mortality classification and LOS regression.
+- Applied clinical ML evaluation principles including AUPRC for imbalanced mortality, RMSE/MAE for LOS, grouped validation, subgroup fairness checks, and explainability-focused model selection.
