@@ -19,14 +19,11 @@ The result is a cleaner, recruiter-friendly project that demonstrates:
 ```text
 .
 ├── src/preprocess_split_first.py      # Correct split-first preprocessing pipeline
+├── notebooks/clinical_ml_pipeline.ipynb # Runnable walkthrough notebook
 ├── tests/                             # Regression tests for leakage safeguards
 ├── data/raw/                          # Local input data, ignored by git
 ├── data/processed/                    # Generated split/model matrices, ignored by git
-├── reports/                           # Optional exported summaries
-├── figures/                           # Optional exported plots
-├── build_team_model_comparison.py     # Combines standardized model metric files
-├── make_corrected_tabular_splits.py   # Legacy split repair utility, now path-configurable
-└── final_model_artifact_manifest.*    # Record of official model artifacts
+└── requirements.txt                   # Minimal Python dependencies
 ```
 
 ## Quickstart
@@ -63,6 +60,16 @@ Run tests:
 ```bash
 pytest
 ```
+
+## Notebook
+
+For a code-first walkthrough, open:
+
+```text
+notebooks/clinical_ml_pipeline.ipynb
+```
+
+The notebook shows how to call the split-first preprocessing pipeline, inspect the audit file, and verify that the held-out splits were transformed by a train-fitted preprocessing object.
 
 ## Leakage Controls
 
